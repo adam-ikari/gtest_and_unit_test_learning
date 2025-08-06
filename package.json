@@ -2,6 +2,7 @@
   "name": "gtest_and_unit_test_learning",
   "type": "module",
   "private": true,
+  "homepage": "https://adam-ikari.github.io/gtest_and_unit_test_learning",
   "scripts": {
     "build": "slidev build",
     "dev": "slidev --open",
@@ -12,5 +13,8 @@
     "@slidev/theme-default": "latest",
     "@slidev/theme-seriph": "latest",
     "vue": "^3.5.18"
+  },
+  "devDependencies": {
+    "playwright-chromium": "^1.54.2"
   }
 }

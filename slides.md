@@ -935,7 +935,7 @@ class UserRepository {
 private:
   DatabaseConnection& conn;
 public:
-  UserRepository(DatabaseConnection& conn) 
+  UserRepository(DatabaseConnection& conn)
     : conn(conn) {}
   void save(User user) { conn.save(user); }
 };
@@ -983,8 +983,6 @@ public:
 ---
 
 # 总结
-
-
 
 <div grid="~ cols-2 gap-4">
 <div>
