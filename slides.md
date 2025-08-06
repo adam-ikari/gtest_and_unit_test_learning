@@ -82,10 +82,13 @@ seoMeta:
 
 <v-clicks>
 
-- **协作者(Collaborator)**: 类为了完成其职责而需要与其他类进行交互，这些交互的类被称为协作者
-- **依赖注入(Dependency Injection)**: 通过构造函数或方法参数将依赖传递给类，而不是在类内部创建依赖
-- **模拟对象(Mock)**: 在测试中用来替代真实对象的特殊对象，可以验证方法调用和设置期望行为
-- **得墨忒耳定律(Law of Demeter)**: 一个对象应该只与直接朋友交谈，不与陌生人的陌生人交谈
+- **协作者(Collaborator)**：类为了完成其职责而需要与其他类进行交互，这些交互的类被称为协作者。例如，一个[EmailSender](file:///home/zhaodi-chen/project/gtest_and_unit_test_learning/slides.md#L175-L186)类可能需要与[SmtpClient](file:///home/zhaodi-chen/project/gtest_and_unit_test_learning/slides.md#L176-L176)和[Logger](file:///home/zhaodi-chen/project/gtest_and_unit_test_learning/slides.md#L177-L177)协作者进行交互。
+
+- **依赖注入(Dependency Injection)**：通过构造函数或方法参数将依赖传递给类，而不是在类内部创建依赖。这使代码更加灵活和可测试，因为我们可以在测试时传入模拟对象。
+
+- **模拟对象(Mock)**：在测试中用来替代真实对象的特殊对象，可以验证方法调用和设置期望行为。模拟对象帮助我们隔离被测试的代码单元，使测试更加可靠。
+
+- **得墨忒耳定律(Law of Demeter)**：一个对象应该只与直接朋友交谈，不与陌生人的陌生人交谈。通俗地说，就是"只和朋友交谈，不和陌生人的陌生人交谈"，避免链式调用。
 
 </v-clicks>
 
@@ -109,17 +112,121 @@ seoMeta:
 
 # 缺陷 #1: 构造函数执行实际工作 (继续)
 
-## 警告信号
+## 警告信号及说明
 
 <v-clicks>
 
-- 在构造函数中或字段声明中使用 `new` 关键字
-- 在构造函数中或字段声明中调用静态方法
-- 构造函数中除了字段赋值之外的任何操作
-- 构造函数完成后对象未完全初始化
-- 构造函数中存在控制流（条件或循环逻辑）
-- 在构造函数中进行复杂的对象图构造
-- 添加或使用初始化块
+- **在构造函数中或字段声明中使用 `new` 关键字**
+
+  ```cpp
+  class UserService {
+    // 在字段声明中使用new
+    private: UserRepository* repo = new DatabaseUserRepository();
+  };
+  ```
+
+  说明：这种方式将创建依赖的职责放在了类内部，使得难以替换为测试替身，也隐藏了类的真实依赖。
+
+- **在构造函数中或字段声明中调用静态方法**
+
+  ```cpp
+  class OrderService {
+    private: Logger logger;
+    public: OrderService() : logger(LoggerFactory::getLogger()) {}
+  };
+  ```
+
+  说明：静态方法调用创建了隐式依赖，同样难以替换为测试替身，且使类与特定实现紧密耦合。
+
+- **构造函数中除了字段赋值之外的任何操作**
+
+  ```cpp
+  class EmailService {
+    public: EmailService(string configPath) {
+      // 除了字段赋值还有其他操作
+      ConfigReader reader(configPath);
+      this->config = reader.read();  // 复杂操作
+      this->initSmtp();              // 方法调用
+    }
+  };
+  ```
+
+  说明：构造函数应该只负责初始化字段，而不是执行复杂的业务逻辑或调用其他方法。
+
+- **构造函数完成后对象未完全初始化**
+
+  ```cpp
+  class PaymentProcessor {
+    public: PaymentProcessor() {
+      // 构造函数为空，需要额外调用init()
+    }
+    public: void init() { /* 初始化逻辑 */ }
+  };
+  ```
+
+  说明：对象应该在构造函数完成后就处于完全可用状态，不需要额外的初始化步骤。
+
+</v-clicks>
+
+---
+
+# 缺陷 #1: 构造函数执行实际工作 (继续)
+
+## 警告信号及说明 (继续)
+
+<v-clicks>
+
+- **构造函数中存在控制流（条件或循环逻辑）**
+
+  ```cpp
+  class ReportGenerator {
+    public: ReportGenerator(ReportType type) {
+      // 构造函数中有条件逻辑
+      if (type == ReportType::PDF) {
+        this->formatter = new PdfFormatter();
+      } else if (type == ReportType::CSV) {
+        this->formatter = new CsvFormatter();
+      }
+    }
+  };
+  ```
+
+  说明：构造函数中包含条件逻辑使类的行为变得复杂且难以预测，也增加了测试的复杂性。
+
+- **在构造函数中进行复杂的对象图构造**
+
+  ```cpp
+  class ShoppingCart {
+    public: ShoppingCart(User user) {
+      // 复杂的对象图构造
+      this->user = user;
+      this->discountService = new DiscountService(
+        new UserDiscountProvider(user),
+        new SeasonalDiscountProvider(),
+        new CouponDiscountProvider()
+      );
+    }
+  };
+  ```
+
+  说明：在构造函数中构造复杂的对象图使得类承担了过多职责，也使测试需要创建大量依赖对象。
+
+- **添加或使用初始化块**
+
+  ```cpp
+  class DataProcessor {
+    private: vector<string> filters;
+
+    // 初始化块
+    public: DataProcessor() {
+      filters.push_back("filter1");
+      filters.push_back("filter2");
+      filters.push_back("filter3");
+    }
+  };
+  ```
+
+  说明：初始化块中的逻辑应该移到专门的方法中，保持构造函数的简洁。
 
 </v-clicks>
 
@@ -134,11 +241,11 @@ class EmailSender {
 private:
   SmtpClient client;  // 在构造函数中创建
   Logger logger;
-  
+
 public:
   EmailSender(string configPath) {
     // 构造函数中执行实际工作！
-    Config config = new ConfigFileReader(configPath).read(); 
+    Config config = new ConfigFileReader(configPath).read();
     this.client = new SmtpClient(config.getHost(), config.getPort());
     this.logger = new FileLogger("email.log");
     if (!client.isConnected()) {
@@ -151,6 +258,7 @@ public:
 <v-click>
 
 问题：
+
 - 无法模拟 SmtpClient 或 Logger
 - 无法在没有网络连接的情况下进行测试
 - 难以轻松测试错误处理路径
@@ -168,13 +276,13 @@ class EmailSender {
 private:
   SmtpClient& client;  // 注入的依赖
   Logger& logger;      // 注入的依赖
-  
+
 public:
   // 构造函数只分配字段
-  EmailSender(SmtpClient& client, Logger& logger) 
+  EmailSender(SmtpClient& client, Logger& logger)
     : client(client), logger(logger) {
   }
-  
+
   void sendEmail(Email email) {
     logger.log("Sending email");
     client.send(email);
@@ -185,6 +293,7 @@ public:
 <v-click>
 
 优势：
+
 - 易于在测试中注入模拟对象
 - 构造函数中没有实际工作
 - 依赖关系清晰
@@ -210,18 +319,52 @@ public:
 
 # 缺陷 #2: 深入协作者 (继续)
 
-## 警告信号
+## 警告信号及说明
 
 <v-clicks>
 
-- 传入的对象从未直接使用（仅用于获取其他对象）
-- 违反得墨忒耳定律：方法调用链通过对象图走过不止一个点(.)
-- 参数或字段中的可疑名称：
-  - `context`
-  - `environment`
-  - `principal`
-  - `container`
-  - `manager`
+- **传入的对象从未直接使用（仅用于获取其他对象）**
+
+  ```cpp
+  class OrderService {
+    public: void processOrder(Order order, DatabaseManager dbManager) {
+      // dbManager仅用于获取Connection
+      Connection conn = dbManager.getConnection();
+      OrderRepository repo = new OrderRepository(conn);
+      repo.save(order);
+    }
+  };
+  ```
+
+  说明：传入[DatabaseManager](file:///home/zhaodi-chen/project/gtest_and_unit_test_learning/slides.md#L289-L297)只是为了获取[Connection](file:///home/zhaodi-chen/project/gtest_and_unit_test_learning/slides.md#L292-L292)，这表明类与[DatabaseManager](file:///home/zhaodi-chen/project/gtest_and_unit_test_learning/slides.md#L289-L297)的耦合度过高，应该直接依赖所需的对象。
+
+- **违反得墨忒耳定律：方法调用链通过对象图走过不止一个点(.)**
+
+  ```cpp
+  class UserService {
+    public: void sendNotification(User user) {
+      // 违反得墨忒耳定律的链式调用
+      user.getProfile().getPreferences().getNotificationSettings().getEmail();
+    }
+  };
+  ```
+
+  说明：这种链式调用称为"火车残骸"，增加了代码的脆弱性，任何一个环节的改变都可能影响整个调用链。
+
+- **参数或字段中的可疑名称**
+
+  ```cpp
+  class ReportGenerator {
+    private: ApplicationContext context;  // 可疑的"上下文"名称
+
+    public: void generateReport() {
+      // 深入协作者
+      ReportConfig config = context.getConfiguration().getReportSettings();
+    }
+  };
+  ```
+
+  说明：像"context"、"environment"、"manager"这样的名称通常表明类可能在深入协作者，应该明确需要的具体依赖。
 
 </v-clicks>
 
@@ -235,12 +378,12 @@ public:
 class UserRegistration {
 private:
   DatabaseManager dbManager;
-  
+
 public:
-  UserRegistration(DatabaseManager dbManager) 
+  UserRegistration(DatabaseManager dbManager)
     : dbManager(dbManager) {
   }
-  
+
   void registerUser(UserData userData) {
     // 深入协作者：通过dbManager获取ConnectionPool，再获取Connection
     Connection conn = dbManager.getConnectionPool().getConnection();
@@ -253,6 +396,7 @@ public:
 <v-click>
 
 问题：
+
 - 需要模拟复杂的对象图 (DatabaseManager → ConnectionPool → Connection)
 - 类之间紧密耦合
 - 难以隔离测试
@@ -269,12 +413,12 @@ public:
 class UserRegistration {
 private:
   UserRepository& userRepository;
-  
+
 public:
-  UserRegistration(UserRepository& userRepository) 
+  UserRegistration(UserRepository& userRepository)
     : userRepository(userRepository) {
   }
-  
+
   void registerUser(UserData userData) {
     // 直接使用协作者
     userRepository.save(userData);
@@ -285,6 +429,7 @@ public:
 <v-click>
 
 优势：
+
 - 清晰的单一依赖
 - 易于模拟 UserRepository
 - 遵循得墨忒耳定律
@@ -311,15 +456,81 @@ public:
 
 # 缺陷 #3: 脆弱的全局状态和单例 (继续)
 
-## 警告信号
+## 警告信号及说明
 
 <v-clicks>
 
-- 添加或使用单例
-- 添加或使用静态字段或静态方法
-- 添加或使用静态初始化块
-- 添加或使用注册表
-- 添加或使用服务定位器
+- **添加或使用单例**
+
+  ```cpp
+  class UserService {
+    public: void createUser(User user) {
+      // 使用单例
+      DatabaseConnection conn = DatabaseManager::getInstance().getConnection();
+      conn.save(user);
+    }
+  };
+  ```
+
+  说明：单例模式隐藏了类的依赖关系，使得难以替换为测试替身，也使得测试之间相互影响。
+
+- **添加或使用静态字段或静态方法**
+
+  ```cpp
+  class OrderService {
+    private: static Cache cache;  // 静态字段
+
+    public: Order getOrder(int id) {
+      // 使用静态方法
+      return CacheManager::getCachedOrder(id);
+    }
+  };
+  ```
+
+  说明：静态字段和方法创建了全局状态，使得测试之间相互影响，难以并行运行。
+
+- **添加或使用静态初始化块**
+
+  ```cpp
+  class Logger {
+    private: static Logger instance;
+
+    // 静态初始化块
+    static {
+      instance = new Logger();
+      instance.setLevel(LogLevel.INFO);
+      instance.setFile("app.log");
+    }
+  };
+  ```
+
+  说明：静态初始化块使得类的行为在测试间难以控制和修改。
+
+- **添加或使用注册表**
+
+  ```cpp
+  class PaymentService {
+    public: void processPayment(Payment payment) {
+      // 使用注册表
+      PaymentProcessor processor = ServiceRegistry.get("paymentProcessor");
+      processor.process(payment);
+    }
+  };
+  ```
+
+  说明：注册表和服务定位器隐藏了真实的依赖关系，使得难以理解类的实际需求。
+
+- **添加或使用服务定位器**
+  ```cpp
+  class NotificationService {
+    public: void sendNotification(Notification notification) {
+      // 使用服务定位器
+      EmailService emailService = ServiceLocator.getEmailService();
+      emailService.send(notification);
+    }
+  };
+  ```
+  说明：服务定位器虽然比单例稍好，但仍然隐藏了依赖关系，不利于测试。
 
 </v-clicks>
 
@@ -344,6 +555,7 @@ public:
 <v-click>
 
 问题：
+
 - 无法模拟单例实例
 - 测试通过全局状态相互影响
 - 难以轻松测试错误场景
@@ -363,7 +575,7 @@ private:
   PaymentService& paymentService;
   InventoryManager& inventoryManager;
   Logger& logger;
-  
+
 public:
   OrderProcessor(PaymentService& paymentService,
                  InventoryManager& inventoryManager,
@@ -372,7 +584,7 @@ public:
       inventoryManager(inventoryManager),
       logger(logger) {
   }
-  
+
   void processOrder(Order order) {
     paymentService.charge(order.getAmount());
     inventoryManager.updateStock(order.getItems());
@@ -384,6 +596,7 @@ public:
 <v-click>
 
 优势：
+
 - 依赖关系明确
 - 易于注入模拟对象
 - 无全局状态
@@ -410,14 +623,70 @@ public:
 
 # 缺陷 #4: 类职责过多 (继续)
 
-## 警告信号
+## 警告信号及说明
 
 <v-clicks>
 
-- 总结类的作用时包含"和"字
-- 新团队成员难以阅读并快速理解类的作用
-- 类中的字段只在某些方法中使用
-- 类中有只操作参数的静态方法
+- **总结类的作用时包含"和"字**
+
+  ```cpp
+  // 这个类验证用户和保存用户和发送欢迎邮件
+  class UserService {
+    public: void registerUser(UserData data) {
+      // 验证用户
+      validateUserData(data);
+      // 保存用户
+      saveUser(data);
+      // 发送邮件
+      sendWelcomeEmail(data);
+    }
+  };
+  ```
+
+  说明：当需要用"和"来描述类的职责时，表明类承担了过多职责，应该拆分为多个专注的类。
+
+- **新团队成员难以阅读并快速理解类的作用**
+
+  ```cpp
+  class OrderManager {
+    // 包含太多方法，职责不清晰
+    public: void createOrder() { /* ... */ }
+    public: void calculateTax() { /* ... */ }
+    public: void generateInvoice() { /* ... */ }
+    public: void sendConfirmation() { /* ... */ }
+    public: void updateInventory() { /* ... */ }
+    public: void processPayment() { /* ... */ }
+  };
+  ```
+
+  说明：类应该有清晰、专注的职责，使新成员能够快速理解其作用。
+
+- **类中的字段只在某些方法中使用**
+
+  ```cpp
+  class ReportGenerator {
+    private: EmailService emailService;     // 只在sendReport中使用
+    private: FileService fileService;       // 只在saveReport中使用
+    private: DatabaseService databaseService; // 只在loadData中使用
+
+    public: void loadData() { /* 只使用databaseService */ }
+    public: void saveReport() { /* 只使用fileService */ }
+    public: void sendReport() { /* 只使用emailService */ }
+  };
+  ```
+
+  说明：如果字段只在部分方法中使用，表明类可能承担了多个职责，应该拆分。
+
+- **类中有只操作参数的静态方法**
+  ```cpp
+  class UserUtil {
+    // 静态方法只操作参数，与类的状态无关
+    public: static bool isValidEmail(string email) { /* ... */ }
+    public: static bool isAdult(int age) { /* ... */ }
+    public: static string formatName(string firstName, string lastName) { /* ... */ }
+  };
+  ```
+  说明：只操作参数的静态方法应该移到更合适的工具类中，或者成为相关类的实例方法。
 
 </v-clicks>
 
@@ -434,24 +703,24 @@ private:
   EmailService emailService;
   UserValidator validator;
   Cache cache;
-  
+
 public:
   User createUser(string name, string email) {
     // 验证逻辑
     if (!validator.isValidEmail(email)) {
       throw new ValidationException();
     }
-    
+
     // 数据库逻辑
     User user = new User(name, email);
     conn.save(user);
-    
+
     // 通知逻辑
     emailService.sendWelcomeEmail(user);
-    
+
     return user;
   }
-  
+
   // 其他用于不同职责的方法...
 };
 ```
@@ -459,6 +728,7 @@ public:
 <v-click>
 
 问题：
+
 - 多个职责：验证、持久化、通知
 - 难以隔离测试
 - 每个测试需要复杂的设置
@@ -485,7 +755,7 @@ private:
   DatabaseConnection& conn;
 public:
   UserRepository(DatabaseConnection& conn) : conn(conn) {}
-  
+
   void save(User user) {
     // 只有持久化逻辑
     conn.save(user);
@@ -496,9 +766,9 @@ class WelcomeEmailSender {
 private:
   EmailService& emailService;
 public:
-  WelcomeEmailSender(EmailService& emailService) 
+  WelcomeEmailSender(EmailService& emailService)
     : emailService(emailService) {}
-  
+
   void sendWelcomeEmail(User user) {
     // 只有通知逻辑
     emailService.sendWelcomeEmail(user);
@@ -509,6 +779,7 @@ public:
 <v-click>
 
 优势：
+
 - 每个类都有单一职责
 - 易于单独测试每个类
 - 依赖关系清晰
@@ -523,11 +794,11 @@ public:
 
 <v-clicks>
 
-- **快速**：测试运行迅速
-- **隔离**：测试之间互不影响
+- **快速**：测试运行迅速，不依赖外部资源
+- **隔离**：测试之间互不影响，可以独立运行
 - **具体**：当测试失败时，我们知道确切的问题所在
-- **清晰**：测试代码易于理解
-- **可维护**：实现更改时测试不会中断
+- **清晰**：测试代码易于理解，表达明确的意图
+- **可维护**：实现更改时测试不会中断，除非行为确实改变
 
 </v-clicks>
 
@@ -539,15 +810,19 @@ public:
 
 1. **构造函数应该只将参数分配给字段**
    - 注入依赖而不是创建它们
+   - 保持构造函数简洁
 
 2. **直接请求依赖**
    - 不要深入了解协作者以获取其他对象
+   - 遵循得墨忒耳定律
 
 3. **避免全局状态和单例**
    - 使依赖关系明确
+   - 使用依赖注入
 
 4. **遵循单一职责原则**
    - 一个类，一个职责
+   - 保持类小而专注
 
 </v-clicks>
 
