@@ -76,6 +76,21 @@ seoMeta:
 
 ---
 
+# 重要概念解释
+
+在深入学习这四个缺陷之前，我们需要先理解一些重要概念：
+
+<v-clicks>
+
+- **协作者(Collaborator)**: 类为了完成其职责而需要与其他类进行交互，这些交互的类被称为协作者
+- **依赖注入(Dependency Injection)**: 通过构造函数或方法参数将依赖传递给类，而不是在类内部创建依赖
+- **模拟对象(Mock)**: 在测试中用来替代真实对象的特殊对象，可以验证方法调用和设置期望行为
+- **得墨忒耳定律(Law of Demeter)**: 一个对象应该只与直接朋友交谈，不与陌生人的陌生人交谈
+
+</v-clicks>
+
+---
+
 # 缺陷 #1: 构造函数执行实际工作
 
 ## 问题所在
@@ -184,9 +199,9 @@ public:
 
 <v-clicks>
 
-- 需要对象只是为了深入了解它们以获取其他对象的类
+- 类需要其他对象只是为了获取更多的对象（深入协作者）
 - 违反得墨忒耳定律
-- 在类之间创建紧密耦合
+- 创建类之间的紧密耦合
 - 使测试变得更加困难，因为您需要创建复杂的对象图
 
 </v-clicks>
@@ -227,7 +242,7 @@ public:
   }
   
   void registerUser(UserData userData) {
-    // 深入协作者
+    // 深入协作者：通过dbManager获取ConnectionPool，再获取Connection
     Connection conn = dbManager.getConnectionPool().getConnection();
     UserRepository repo = new UserRepository(conn);
     repo.save(userData);
