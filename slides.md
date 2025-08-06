@@ -245,6 +245,9 @@ seoMeta:
 
 ## 之前：难以测试
 
+<div class="grid cols-2 gap-4">
+<div>
+
 ```cpp
 class EmailSender {
 private:
@@ -254,8 +257,11 @@ private:
 public:
   EmailSender(string configPath) {
     // 构造函数中执行实际工作！
-    Config config = new ConfigFileReader(configPath).read();
-    this.client = new SmtpClient(config.getHost(), config.getPort());
+    Config config =
+      new ConfigFileReader(configPath).read();
+    this.client = new SmtpClient(
+        config.getHost(),
+        config.getPort());
     this.logger = new FileLogger("email.log");
     if (!client.isConnected()) {
       throw new ConnectionException();
@@ -273,6 +279,7 @@ public:
 - 无法在没有网络连接的情况下进行测试
 - 难以轻松测试错误处理路径
 
+</div>
 </div>
 
 ---
@@ -351,6 +358,8 @@ public:
 
   说明：传入 "DatabaseManager" 只是为了获取 "Connection" ，这表明类与 "DatabaseManager" 的耦合度过高，应该直接依赖所需的对象。
 
+---
+
 - **违反得墨忒耳定律：方法调用链通过对象图走过不止一个点(.)**
 
   ```cpp
@@ -363,6 +372,8 @@ public:
   ```
 
   说明：这种链式调用称为"火车残骸"，增加了代码的脆弱性，任何一个环节的改变都可能影响整个调用链。
+
+---
 
 - **参数或字段中的可疑名称**
 
@@ -385,6 +396,9 @@ public:
 
 ### 之前：难以测试
 
+<div class="grid cols-2 gap-4">
+<div>
+
 ```cpp
 class UserRegistration {
 private:
@@ -396,13 +410,19 @@ public:
   }
 
   void registerUser(UserData userData) {
-    // 深入协作者：通过dbManager获取ConnectionPool，再获取Connection
-    Connection conn = dbManager.getConnectionPool().getConnection();
+    // 深入协作者：
+    // 通过dbManager获取ConnectionPool，再获取Connection
+    Connection conn = dbManager
+      .getConnectionPool()
+      .getConnection();
     UserRepository repo = new UserRepository(conn);
     repo.save(userData);
   }
 };
 ```
+
+</div>
+<div>
 
 问题：
 
@@ -410,11 +430,17 @@ public:
 - 类之间紧密耦合
 - 难以隔离测试
 
+</div>
+</div>
+
 ---
 
 # 缺陷 #2: 示例对比 (继续)
 
 ### 之后：可测试的设计
+
+<div class="grid cols-2 gap-4">
+<div>
 
 ```cpp
 class UserRegistration {
@@ -433,12 +459,17 @@ public:
 };
 ```
 
+</div>
+<div>
+
 优势：
 
 - 清晰的单一依赖
 - 易于模拟 UserRepository
 - 遵循得墨忒耳定律
 
+</div>
+</div>
 
 ---
 
@@ -462,8 +493,6 @@ public:
 
 ## 警告信号及说明
 
-::v-clicks
-
 - **添加或使用单例**
 
   ```cpp
@@ -477,6 +506,8 @@ public:
   ```
 
   说明：单例模式隐藏了类的依赖关系，使得难以替换为测试替身，也使得测试之间相互影响。
+
+---
 
 - **添加或使用静态字段或静态方法**
 
@@ -492,6 +523,8 @@ public:
   ```
 
   说明：静态字段和方法创建了全局状态，使得测试之间相互影响，难以并行运行。
+
+---
 
 - **添加或使用静态初始化块**
 
@@ -510,6 +543,8 @@ public:
 
   说明：静态初始化块使得类的行为在测试间难以控制和修改。
 
+---
+
 - **添加或使用注册表**
 
   ```cpp
@@ -524,6 +559,8 @@ public:
 
   说明：注册表和服务定位器隐藏了真实的依赖关系，使得难以理解类的实际需求。
 
+---
+
 - **添加或使用服务定位器**
   ```cpp
   class NotificationService {
@@ -536,29 +573,36 @@ public:
   ```
   说明：服务定位器虽然比单例稍好，但仍然隐藏了依赖关系，不利于测试。
 
-::
-
 ---
 
-# 缺陷 #3: 示例对比
+# 缺陷 #3: 示例
 
-<div grid="~ cols-2 gap-4">
+## 之前：难以测试
 
+<div class="grid cols-2 gap-4">
+<v-clicks>
 <div>
-
-### 之前：难以测试
 
 ```cpp
 class OrderProcessor {
 public:
   void processOrder(Order order) {
     // 使用全局状态和单例
-    PaymentService.getInstance().charge(order.getAmount());
-    InventoryManager.getInstance().updateStock(order.getItems());
-    Logger.getLogger().log("Order processed: " + order.getId());
+    PaymentService
+      .getInstance()
+      .charge(order.getAmount());
+    InventoryManager
+      .getInstance()
+      .updateStock(order.getItems());
+    Logger
+      .getLogger()
+      .log("Order processed: " + order.getId());
   }
 };
 ```
+
+</div>
+<div>
 
 问题：
 
@@ -568,10 +612,15 @@ public:
 - 难以并行运行测试
 
 </div>
+</v-clicks>
+</div>
 
+---
+
+## 之后：可测试的设计
+
+<div class="grid cols-2 gap-4">
 <div>
-
-### 之后：可测试的设计
 
 ```cpp
 class OrderProcessor {
@@ -597,6 +646,9 @@ public:
 };
 ```
 
+</div>
+<div>
+
 优势：
 
 - 依赖关系明确
@@ -605,8 +657,114 @@ public:
 - 测试可以独立运行
 
 </div>
-
 </div>
+
+---
+
+## 补充：替代单例模式的方法
+
+### 1. 依赖注入 (Dependency Injection)
+
+```cpp
+class OrderProcessor {
+private:
+    PaymentService& paymentService;
+    InventoryManager& inventoryManager;
+    Logger& logger;
+
+public:
+    // 通过构造函数注入依赖
+    OrderProcessor(PaymentService& paymentService,
+                   InventoryManager& inventoryManager,
+                   Logger& logger)
+        : paymentService(paymentService),
+          inventoryManager(inventoryManager),
+          logger(logger) {
+    }
+
+    void processOrder(Order order) {
+        paymentService.charge(order.getAmount());
+        inventoryManager.updateStock(order.getItems());
+        logger.log("Order processed: " + order.getId());
+    }
+};
+```
+
+---
+
+### 2. 工厂模式 (Factory Pattern)
+
+```cpp
+class ServiceFactory {
+public:
+    static PaymentService createPaymentService() {
+        return PaymentService();
+    }
+
+    static InventoryManager createInventoryManager() {
+        return InventoryManager();
+    }
+};
+```
+
+---
+
+### 3. 控制反转 (Inversion of Control)
+
+```cpp
+// 定义接口
+class IPaymentService {
+public:
+    virtual void charge(double amount) = 0;
+};
+
+// 具体实现
+class StripePaymentService : public IPaymentService {
+public:
+    void charge(double amount) override {
+        // Stripe 实现
+    }
+};
+
+// 通过容器管理实例
+class ServiceContainer {
+private:
+    std::unique_ptr<IPaymentService> paymentService;
+public:
+    ServiceContainer() {
+        paymentService = std::make_unique<StripePaymentService>();
+    }
+    IPaymentService& getPaymentService() {
+        return *paymentService;
+    }
+};
+```
+
+---
+
+### 4. 参数传递
+
+```cpp
+class OrderProcessor {
+public:
+    // 将依赖作为参数传递
+    void processOrder(Order order,
+                     PaymentService& paymentService,
+                     InventoryManager& inventoryManager) {
+        paymentService.charge(order.getAmount());
+        inventoryManager.updateStock(order.getItems());
+    }
+};
+```
+
+---
+
+### 这些方法的优势：
+
+- **可测试性**：可以轻松注入模拟对象进行测试
+- **灵活性**：可以在运行时更改实现
+- **松耦合**：类不依赖于具体实现
+- **可维护性**：依赖关系明确，易于理解和修改
 
 ---
 
@@ -851,5 +1009,3 @@ public:
 问答环节
 
 </div>
-
-::
