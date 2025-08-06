@@ -787,77 +787,96 @@ public:
 
 ## 警告信号及说明
 
-::v-clicks
-
 - **总结类的作用时包含"和"字**
 
   ```cpp
-  // 这个类验证用户和保存用户和发送欢迎邮件
+  // 这个类方法的作用是验证用户、保存用户和发送欢迎邮件。
   class UserService {
-    public: void registerUser(UserData data) {
-      // 验证用户
-      validateUserData(data);
-      // 保存用户
-      saveUser(data);
-      // 发送邮件
-      sendWelcomeEmail(data);
-    }
+    public:
+      void registerUser(UserData data) {
+        // 验证用户
+        validateUserData(data);
+        // 保存用户
+        saveUser(data);
+        // 发送邮件
+        sendWelcomeEmail(data);
+      }
   };
   ```
 
   说明：当需要用"和"来描述类的职责时，表明类承担了过多职责，应该拆分为多个专注的类。
 
+---
+
 - **新团队成员难以阅读并快速理解类的作用**
+
+  这个类到底是做什么？
 
   ```cpp
   class OrderManager {
     // 包含太多方法，职责不清晰
-    public: void createOrder() { /* ... */ }
-    public: void calculateTax() { /* ... */ }
-    public: void generateInvoice() { /* ... */ }
-    public: void sendConfirmation() { /* ... */ }
-    public: void updateInventory() { /* ... */ }
-    public: void processPayment() { /* ... */ }
+    public:
+      void createOrder() { /* ... */ } // 创建订单
+      void calculateTax() { /* ... */ } // 计算税
+      void generateInvoice() { /* ... */ } // 生成发票
+      void sendConfirmation() { /* ... */ } // 发送确认邮件
+      void updateInventory() { /* ... */ } // 更新库存
+      void processPayment() { /* ... */ } // 处理支付
   };
   ```
 
   说明：类应该有清晰、专注的职责，使新成员能够快速理解其作用。
 
+---
+
 - **类中的字段只在某些方法中使用**
+
+  是不是强行把多个字段放在同一个类中？
 
   ```cpp
   class ReportGenerator {
-    private: EmailService emailService;     // 只在sendReport中使用
-    private: FileService fileService;       // 只在saveReport中使用
-    private: DatabaseService databaseService; // 只在loadData中使用
+    private:
+      EmailService emailService;     // 只在sendReport中使用
+      FileService fileService;       // 只在saveReport中使用
+      DatabaseService databaseService; // 只在loadData中使用
 
-    public: void loadData() { /* 只使用databaseService */ }
-    public: void saveReport() { /* 只使用fileService */ }
-    public: void sendReport() { /* 只使用emailService */ }
+    public:
+      void loadData() { /* 只使用databaseService */ }
+      void saveReport() { /* 只使用fileService */ }
+      void sendReport() { /* 只使用emailService */ }
   };
   ```
 
   说明：如果字段只在部分方法中使用，表明类可能承担了多个职责，应该拆分。
 
+---
+
 - **类中有只操作参数的静态方法**
+
+  把工具类放进了一个有状态的类中。
+
   ```cpp
-  class UserUtil {
+  class User {
+    private:
+      std::string firstName;
+      std::string lastName;
+      int age;
+
     // 静态方法只操作参数，与类的状态无关
-    public: static bool isValidEmail(string email) { /* ... */ }
-    public: static bool isAdult(int age) { /* ... */ }
-    public: static string formatName(string firstName, string lastName) { /* ... */ }
+    public:
+      static bool isValidEmail(string email) { /* ... */ }
+      static bool isAdult(int age) { /* ... */ }
+      static string formatName(string firstName, string lastName) { /* ... */ }
   };
   ```
-  说明：只操作参数的静态方法应该移到更合适的工具类中，或者成为相关类的实例方法。
 
-::
+  说明：只操作参数的静态方法应该移到更合适的工具类中，或者成为相关类的实例方法。
 
 ---
 
-# 缺陷 #4: 示例对比
+# 缺陷 #4: 示例
 
 <div grid="~ cols-2 gap-4">
-
 <div>
 
 ### 之前：难以测试
@@ -889,6 +908,9 @@ public:
 };
 ```
 
+</div>
+<div>
+
 问题：
 
 - 多个职责：验证、持久化、通知
@@ -896,10 +918,14 @@ public:
 - 每个测试需要复杂的设置
 
 </div>
+</div>
 
-<div>
+---
 
 ### 之后：可测试的设计
+
+<div grid="~ cols-2 gap-4">
+<div>
 
 ```cpp
 // 拆分为专注的类
@@ -912,7 +938,8 @@ class UserRepository {
 private:
   DatabaseConnection& conn;
 public:
-  UserRepository(DatabaseConnection& conn) : conn(conn) {}
+  UserRepository(DatabaseConnection& conn) 
+    : conn(conn) {}
   void save(User user) { conn.save(user); }
 };
 
@@ -928,6 +955,9 @@ public:
 };
 ```
 
+</div>
+<div>
+
 优势：
 
 - 每个类都有单一职责
@@ -935,7 +965,6 @@ public:
 - 依赖关系清晰
 
 </div>
-
 </div>
 
 ---
@@ -958,6 +987,11 @@ public:
 
 # 总结
 
+
+
+<div grid="~ cols-2 gap-4">
+<div>
+
 ::v-clicks
 
 1. **构造函数应该只将参数分配给字段**
@@ -967,6 +1001,13 @@ public:
 2. **直接请求依赖**
    - 不要深入了解协作者以获取其他对象
    - 遵循得墨忒耳定律
+
+::
+
+</div>
+<div>
+
+::v-clicks
 
 3. **避免全局状态和单例**
    - 使依赖关系明确
@@ -978,11 +1019,13 @@ public:
 
 ::
 
-<br>
-::v-clicks
+</div>
+</div>
 
-> "防止bug最有效的方法是编写可测试的代码。"
-> — Miško Hevery
+---
+
+> "防止 Bug 最有效的方法是编写可测试的代码。"
+> -- Miško Hevery
 
 ::
 
@@ -1005,7 +1048,5 @@ public:
 <div class="text-center">
 
 谢谢！
-
-问答环节
 
 </div>
