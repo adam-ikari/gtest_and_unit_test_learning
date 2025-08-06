@@ -7,8 +7,7 @@ background: https://cover.sli.dev
 # some information about your slides (markdown enabled)
 title: 编写可测试的代码
 info: |
-  ## 编写可测试代码指南
-  基于mhevery的指南 - 四个使代码难以测试的设计缺陷
+  四个使代码难以测试的设计缺陷
 
   Learn more at [Sli.dev](https://sli.dev)
 # apply unocss classes to the current slide
@@ -29,8 +28,6 @@ seoMeta:
 ---
 
 # 编写可测试的代码
-
-编写可测试代码指南
 
 四个使代码难以测试的设计缺陷
 
