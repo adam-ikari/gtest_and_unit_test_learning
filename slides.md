@@ -32,24 +32,11 @@ seoMeta:
 
 编写可测试代码指南
 
-基于mhevery的指南 - 四个使代码难以测试的设计缺陷
+四个使代码难以测试的设计缺陷
 
 <div @click="$slidev.nav.next" class="mt-12 py-1" hover:bg="white op-10">
   按空格进入下一页 <carbon:arrow-right />
 </div>
-
-<div class="abs-br m-6 text-xl">
-  <button @click="$slidev.nav.openInEditor()" title="在编辑器中打开" class="slidev-icon-btn">
-    <carbon:edit />
-  </button>
-  <a href="https://github.com/slidevjs/slidev" target="_blank" class="slidev-icon-btn">
-    <carbon:logo-github />
-  </a>
-</div>
-
-<!--
-每张幻灯片的最后一个注释块将被视为幻灯片备注。它将在演示者模式下与幻灯片一起可见和可编辑。[在文档中阅读更多](https://sli.dev/guide/syntax.html#notes)
--->
 
 ---
 
@@ -82,13 +69,13 @@ seoMeta:
 
 <v-clicks>
 
-- **协作者(Collaborator)**：类为了完成其职责而需要与其他类进行交互，这些交互的类被称为协作者。例如，一个[EmailSender](file:///home/zhaodi-chen/project/gtest_and_unit_test_learning/slides.md#L175-L186)类可能需要与[SmtpClient](file:///home/zhaodi-chen/project/gtest_and_unit_test_learning/slides.md#L176-L176)和[Logger](file:///home/zhaodi-chen/project/gtest_and_unit_test_learning/slides.md#L177-L177)协作者进行交互。
+- **协作者(Collaborator)**：类为了完成其职责而需要与其他类进行交互，这些交互的类被称为协作者。
 
 - **依赖注入(Dependency Injection)**：通过构造函数或方法参数将依赖传递给类，而不是在类内部创建依赖。这使代码更加灵活和可测试，因为我们可以在测试时传入模拟对象。
 
 - **模拟对象(Mock)**：在测试中用来替代真实对象的特殊对象，可以验证方法调用和设置期望行为。模拟对象帮助我们隔离被测试的代码单元，使测试更加可靠。
 
-- **得墨忒耳定律(Law of Demeter)**：一个对象应该只与直接朋友交谈，不与陌生人的陌生人交谈。通俗地说，就是"只和朋友交谈，不和陌生人的陌生人交谈"，避免链式调用。
+- **得墨忒耳定律(Law of Demeter)**：一个对象应该只与直接朋友交谈，不与陌生人的陌生人交谈，避免链式调用。
 
 </v-clicks>
 
@@ -114,8 +101,6 @@ seoMeta:
 
 ## 警告信号及说明
 
-<v-clicks>
-
 - **在构造函数中或字段声明中使用 `new` 关键字**
 
   ```cpp
@@ -127,6 +112,12 @@ seoMeta:
 
   说明：这种方式将创建依赖的职责放在了类内部，使得难以替换为测试替身，也隐藏了类的真实依赖。
 
+---
+
+# 缺陷 #1: 构造函数执行实际工作 (继续)
+
+## 警告信号及说明 (继续)
+
 - **在构造函数中或字段声明中调用静态方法**
 
   ```cpp
@@ -137,6 +128,12 @@ seoMeta:
   ```
 
   说明：静态方法调用创建了隐式依赖，同样难以替换为测试替身，且使类与特定实现紧密耦合。
+
+---
+
+# 缺陷 #1: 构造函数执行实际工作 (继续)
+
+## 警告信号及说明 (继续)
 
 - **构造函数中除了字段赋值之外的任何操作**
 
@@ -153,6 +150,12 @@ seoMeta:
 
   说明：构造函数应该只负责初始化字段，而不是执行复杂的业务逻辑或调用其他方法。
 
+---
+
+# 缺陷 #1: 构造函数执行实际工作 (继续)
+
+## 警告信号及说明 (继续)
+
 - **构造函数完成后对象未完全初始化**
 
   ```cpp
@@ -166,15 +169,11 @@ seoMeta:
 
   说明：对象应该在构造函数完成后就处于完全可用状态，不需要额外的初始化步骤。
 
-</v-clicks>
-
 ---
 
 # 缺陷 #1: 构造函数执行实际工作 (继续)
 
 ## 警告信号及说明 (继续)
-
-<v-clicks>
 
 - **构造函数中存在控制流（条件或循环逻辑）**
 
@@ -192,6 +191,12 @@ seoMeta:
   ```
 
   说明：构造函数中包含条件逻辑使类的行为变得复杂且难以预测，也增加了测试的复杂性。
+
+---
+
+# 缺陷 #1: 构造函数执行实际工作 (继续)
+
+## 警告信号及说明 (继续)
 
 - **在构造函数中进行复杂的对象图构造**
 
@@ -211,6 +216,12 @@ seoMeta:
 
   说明：在构造函数中构造复杂的对象图使得类承担了过多职责，也使测试需要创建大量依赖对象。
 
+---
+
+# 缺陷 #1: 构造函数执行实际工作 (继续)
+
+## 警告信号及说明 (继续)
+
 - **添加或使用初始化块**
 
   ```cpp
@@ -227,8 +238,6 @@ seoMeta:
   ```
 
   说明：初始化块中的逻辑应该移到专门的方法中，保持构造函数的简洁。
-
-</v-clicks>
 
 ---
 
@@ -255,21 +264,25 @@ public:
 };
 ```
 
-<v-click>
+</div>
+<div>
 
 问题：
 
-- 无法模拟 SmtpClient 或 Logger
+- 无法模拟 "SmtpClient" 或 "Logger"
 - 无法在没有网络连接的情况下进行测试
 - 难以轻松测试错误处理路径
 
-</v-click>
+</div>
 
 ---
 
 # 缺陷 #1: 示例
 
 ## 之后：可测试的设计
+
+<div class="grid cols-2 gap-4">
+<div>
 
 ```cpp
 class EmailSender {
@@ -290,7 +303,8 @@ public:
 };
 ```
 
-<v-click>
+</div>
+<div>
 
 优势：
 
@@ -298,7 +312,8 @@ public:
 - 构造函数中没有实际工作
 - 依赖关系清晰
 
-</v-click>
+</div>
+</div>
 
 ---
 
@@ -306,22 +321,20 @@ public:
 
 ## 问题所在
 
-<v-clicks>
+::v-clicks
 
 - 类需要其他对象只是为了获取更多的对象（深入协作者）
 - 违反得墨忒耳定律
 - 创建类之间的紧密耦合
 - 使测试变得更加困难，因为您需要创建复杂的对象图
 
-</v-clicks>
+::
 
 ---
 
 # 缺陷 #2: 深入协作者 (继续)
 
 ## 警告信号及说明
-
-<v-clicks>
 
 - **传入的对象从未直接使用（仅用于获取其他对象）**
 
@@ -336,7 +349,7 @@ public:
   };
   ```
 
-  说明：传入[DatabaseManager](file:///home/zhaodi-chen/project/gtest_and_unit_test_learning/slides.md#L289-L297)只是为了获取[Connection](file:///home/zhaodi-chen/project/gtest_and_unit_test_learning/slides.md#L292-L292)，这表明类与[DatabaseManager](file:///home/zhaodi-chen/project/gtest_and_unit_test_learning/slides.md#L289-L297)的耦合度过高，应该直接依赖所需的对象。
+  说明：传入 "DatabaseManager" 只是为了获取 "Connection" ，这表明类与 "DatabaseManager" 的耦合度过高，应该直接依赖所需的对象。
 
 - **违反得墨忒耳定律：方法调用链通过对象图走过不止一个点(.)**
 
@@ -364,15 +377,13 @@ public:
   };
   ```
 
-  说明：像"context"、"environment"、"manager"这样的名称通常表明类可能在深入协作者，应该明确需要的具体依赖。
-
-</v-clicks>
+  说明：像 "context"、"environment"、"manager" 这样的名称通常表明类可能在深入协作者，应该明确需要的具体依赖。
 
 ---
 
-# 缺陷 #2: 示例
+# 缺陷 #2: 示例对比
 
-## 之前：难以测试
+### 之前：难以测试
 
 ```cpp
 class UserRegistration {
@@ -393,21 +404,17 @@ public:
 };
 ```
 
-<v-click>
-
 问题：
 
 - 需要模拟复杂的对象图 (DatabaseManager → ConnectionPool → Connection)
 - 类之间紧密耦合
 - 难以隔离测试
 
-</v-click>
-
 ---
 
-# 缺陷 #2: 示例
+# 缺陷 #2: 示例对比 (继续)
 
-## 之后：可测试的设计
+### 之后：可测试的设计
 
 ```cpp
 class UserRegistration {
@@ -426,15 +433,12 @@ public:
 };
 ```
 
-<v-click>
-
 优势：
 
 - 清晰的单一依赖
 - 易于模拟 UserRepository
 - 遵循得墨忒耳定律
 
-</v-click>
 
 ---
 
@@ -442,7 +446,7 @@ public:
 
 ## 问题所在
 
-<v-clicks>
+::v-clicks
 
 - 全局状态使代码不可预测
 - 单例创建隐藏依赖
@@ -450,7 +454,7 @@ public:
 - 难以并行运行测试
 - 难以隔离被测系统
 
-</v-clicks>
+::
 
 ---
 
@@ -458,7 +462,7 @@ public:
 
 ## 警告信号及说明
 
-<v-clicks>
+::v-clicks
 
 - **添加或使用单例**
 
@@ -532,13 +536,17 @@ public:
   ```
   说明：服务定位器虽然比单例稍好，但仍然隐藏了依赖关系，不利于测试。
 
-</v-clicks>
+::
 
 ---
 
-# 缺陷 #3: 示例
+# 缺陷 #3: 示例对比
 
-## 之前：难以测试
+<div grid="~ cols-2 gap-4">
+
+<div>
+
+### 之前：难以测试
 
 ```cpp
 class OrderProcessor {
@@ -552,8 +560,6 @@ public:
 };
 ```
 
-<v-click>
-
 问题：
 
 - 无法模拟单例实例
@@ -561,13 +567,11 @@ public:
 - 难以轻松测试错误场景
 - 难以并行运行测试
 
-</v-click>
+</div>
 
----
+<div>
 
-# 缺陷 #3: 示例
-
-## 之后：可测试的设计
+### 之后：可测试的设计
 
 ```cpp
 class OrderProcessor {
@@ -593,8 +597,6 @@ public:
 };
 ```
 
-<v-click>
-
 优势：
 
 - 依赖关系明确
@@ -602,7 +604,9 @@ public:
 - 无全局状态
 - 测试可以独立运行
 
-</v-click>
+</div>
+
+</div>
 
 ---
 
@@ -610,14 +614,14 @@ public:
 
 ## 问题所在
 
-<v-clicks>
+::v-clicks
 
 - 具有多个职责的类难以理解
 - 难以测试所有场景
 - 一个职责的更改可能破坏其他职责
 - 违反单一职责原则
 
-</v-clicks>
+::
 
 ---
 
@@ -625,7 +629,7 @@ public:
 
 ## 警告信号及说明
 
-<v-clicks>
+::v-clicks
 
 - **总结类的作用时包含"和"字**
 
@@ -688,13 +692,17 @@ public:
   ```
   说明：只操作参数的静态方法应该移到更合适的工具类中，或者成为相关类的实例方法。
 
-</v-clicks>
+::
 
 ---
 
-# 缺陷 #4: 示例
+# 缺陷 #4: 示例对比
 
-## 之前：难以测试
+<div grid="~ cols-2 gap-4">
+
+<div>
+
+### 之前：难以测试
 
 ```cpp
 class UserService {
@@ -720,12 +728,8 @@ public:
 
     return user;
   }
-
-  // 其他用于不同职责的方法...
 };
 ```
-
-<v-click>
 
 问题：
 
@@ -733,21 +737,17 @@ public:
 - 难以隔离测试
 - 每个测试需要复杂的设置
 
-</v-click>
+</div>
 
----
+<div>
 
-# 缺陷 #4: 示例
-
-## 之后：可测试的设计
+### 之后：可测试的设计
 
 ```cpp
 // 拆分为专注的类
 class UserValidator {
 public:
-  bool isValidEmail(string email) {
-    // 只有验证逻辑
-  }
+  bool isValidEmail(string email) { /* 只有验证逻辑 */ }
 };
 
 class UserRepository {
@@ -755,11 +755,7 @@ private:
   DatabaseConnection& conn;
 public:
   UserRepository(DatabaseConnection& conn) : conn(conn) {}
-
-  void save(User user) {
-    // 只有持久化逻辑
-    conn.save(user);
-  }
+  void save(User user) { conn.save(user); }
 };
 
 class WelcomeEmailSender {
@@ -768,15 +764,11 @@ private:
 public:
   WelcomeEmailSender(EmailService& emailService)
     : emailService(emailService) {}
-
   void sendWelcomeEmail(User user) {
-    // 只有通知逻辑
     emailService.sendWelcomeEmail(user);
   }
 };
 ```
-
-<v-click>
 
 优势：
 
@@ -784,7 +776,9 @@ public:
 - 易于单独测试每个类
 - 依赖关系清晰
 
-</v-click>
+</div>
+
+</div>
 
 ---
 
@@ -792,7 +786,7 @@ public:
 
 当我们消除这些缺陷后，测试变得容易得多：
 
-<v-clicks>
+::v-clicks
 
 - **快速**：测试运行迅速，不依赖外部资源
 - **隔离**：测试之间互不影响，可以独立运行
@@ -800,13 +794,13 @@ public:
 - **清晰**：测试代码易于理解，表达明确的意图
 - **可维护**：实现更改时测试不会中断，除非行为确实改变
 
-</v-clicks>
+::
 
 ---
 
 # 总结
 
-<v-clicks>
+::v-clicks
 
 1. **构造函数应该只将参数分配给字段**
    - 注入依赖而不是创建它们
@@ -824,31 +818,31 @@ public:
    - 一个类，一个职责
    - 保持类小而专注
 
-</v-clicks>
+::
 
 <br>
-<v-click>
+::v-clicks
 
 > "防止bug最有效的方法是编写可测试的代码。"
 > — Miško Hevery
 
-</v-click>
+::
 
 ---
 
 # 参考资料
 
-<v-clicks>
+::v-clicks
 
 - Miško Hevery的[编写可测试代码指南](https://github.com/mhevery/guide-to-testable-code)
 - [Google测试博客](https://testing.googleblog.com/)
 - Robert C. Martin的《代码整洁之道》
 - Kent Beck的《测试驱动开发》
 
-</v-clicks>
+::
 
 <br>
-<v-click>
+::v-click
 
 <div class="text-center">
 
@@ -858,4 +852,4 @@ public:
 
 </div>
 
-</v-click>
+::
