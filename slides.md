@@ -35,6 +35,10 @@ seoMeta:
   按空格进入下一页 <carbon:arrow-right />
 </div>
 
+<!-- 这是演讲的标题页。在这里介绍主题：编写可测试的代码。
+     强调代码的可测试性对于维护和重构的重要性。
+     可以提一下我们今天会讨论四个最常见的使代码难以测试的设计缺陷。 -->
+
 ---
 
 # 关于本指南
@@ -58,9 +62,19 @@ seoMeta:
 
 </v-click>
 
+<!-- 这部分介绍了我们今天要讨论的四个主要问题。
+     可以解释一下为什么这些缺陷会导致测试困难，以及解决它们的好处。
+     强调这些问题是实际项目中经常遇到的，不是理论问题。 -->
+
 ---
 
 # 重要概念解释
+
+<!-- 在深入具体问题之前，先解释一些关键概念。
+     协作者：这是对象之间交互的关键概念，理解它有助于理解后续问题。
+     依赖注入：这是解决许多测试问题的关键技术。
+     模拟对象：这是测试中非常重要的工具，可以隔离被测代码。
+     得墨忒耳定律：这是面向对象设计的重要原则，违反它会导致代码紧耦合。 -->
 
 在深入学习这四个缺陷之前，我们需要先理解一些重要概念：
 
@@ -935,7 +949,7 @@ class UserRepository {
 private:
   DatabaseConnection& conn;
 public:
-  UserRepository(DatabaseConnection& conn) 
+  UserRepository(DatabaseConnection& conn)
     : conn(conn) {}
   void save(User user) { conn.save(user); }
 };
@@ -983,8 +997,6 @@ public:
 ---
 
 # 总结
-
-
 
 <div grid="~ cols-2 gap-4">
 <div>
