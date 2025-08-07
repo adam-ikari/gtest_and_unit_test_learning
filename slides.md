@@ -29,7 +29,9 @@ seoMeta:
 
 # 编写可测试的C++代码
 
+<h2 class="mb-4 text-4xl">
 四个使代码难以测试的设计缺陷
+</h2>
 
 <div @click="$slidev.nav.next" class="mt-12 py-1" hover:bg="white op-10">
   按空格进入下一页 <carbon:arrow-right />
