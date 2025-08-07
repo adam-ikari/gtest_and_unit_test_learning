@@ -377,6 +377,70 @@ public:
 
 ## 测试示例
 
+```cpp
+// 模拟对象
+class MockSmtpClient : public SmtpClient {
+public:
+    MOCK_METHOD(void, send, (Email email), (override));
+};
+
+class MockLogger : public Logger {
+public:
+    MOCK_METHOD(void, log, (const std::string& message), (override));
+};
+```
+
+---
+
+```cpp
+// 测试用例
+TEST(EmailSenderTest, SendEmailLogsAndSends) {
+    // Arrange (准备)
+    MockSmtpClient mockClient;
+    MockLogger mockLogger;
+    EmailSender sender(mockClient, mockLogger);
+    Email testEmail("test@example.com", "Test Subject", "Test Body");
+
+    // 设置期望
+    EXPECT_CALL(mockLogger, log("Sending email"));
+    EXPECT_CALL(mockClient, send(testEmail));
+
+    // Act (执行)
+    sender.sendEmail(testEmail);
+
+    // Assert (断言)
+    // 期望已经被验证
+}
+```
+
+---
+
+```cpp
+// 测试异常
+TEST(EmailSenderTest, SendEmailHandlesException) {
+    // Arrange
+    MockSmtpClient mockClient;
+    MockLogger mockLogger;
+    EmailSender sender(mockClient, mockLogger);
+    Email testEmail("test@example.com", "Test Subject", "Test Body");
+
+    // 设置期望并抛出异常
+    EXPECT_CALL(mockLogger, log("Sending email"));
+    EXPECT_CALL(mockClient, send(testEmail))
+        .WillOnce(testing::Throw(std::runtime_error("Network error")));
+    EXPECT_CALL(mockLogger, log("Failed to send email: Network error"));
+
+    // Act & Assert
+    sender.sendEmail(testEmail);
+}
+```
+
+---
+
+说明：
+
+通过构造函数注入依赖，而不是在构造函数中执行实际工作，可以轻松地测试类。
+
 ---
 
 # 缺陷 #2: 深入协作者
@@ -592,6 +656,10 @@ public:
 
 ---
 
+# 缺陷 #3: 脆弱的全局状态和单例 (继续)
+
+## 警告信号及说明 (继续)
+
 - **添加或使用静态字段或静态方法**
 
   ::v-clicks
@@ -607,11 +675,15 @@ public:
   };
   ```
 
-  ::
-
   说明：静态字段和方法创建了全局状态，使得测试之间相互影响，难以并行运行。
 
+  ::
+
 ---
+
+# 缺陷 #3: 脆弱的全局状态和单例 (继续)
+
+## 警告信号及说明 (继续)
 
 - **添加或使用静态初始化块**
 
@@ -636,6 +708,10 @@ public:
 
 ---
 
+# 缺陷 #3: 脆弱的全局状态和单例 (继续)
+
+## 警告信号及说明 (继续)
+
 - **添加或使用注册表**
 
   ::v-clicks
@@ -655,6 +731,10 @@ public:
   ::
 
 ---
+
+# 缺陷 #3: 脆弱的全局状态和单例 (继续)
+
+## 警告信号及说明 (继续)
 
 - **添加或使用服务定位器**
 
@@ -939,7 +1019,7 @@ public:
 
 说明：
 
-这种组合方式结合了多种优秀的设计模式，特别适用于替代传统的单例模式：
+这种组合方式结合了多种优秀的设计模式，适用于替代传统的单例模式：
 
 ::v-clicks
 
@@ -987,6 +1067,20 @@ public:
     MOCK_METHOD(void, charge, (double amount), (override));
 };
 
+class MockInventoryManager : public IInventoryManager {
+public:
+    MOCK_METHOD(void, updateStock, (const std::vector<Item>& items), (override));
+};
+
+class MockLogger : public ILogger {
+public:
+    MOCK_METHOD(void, log, (const std::string& message), (override));
+}
+```
+
+---
+
+```cpp
 // 测试代码
 TEST(OrderProcessorTest, ProcessOrderChargesPayment) {
     auto mockPayment = std::make_shared<MockPaymentService>();
