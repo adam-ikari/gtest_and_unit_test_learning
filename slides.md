@@ -5,7 +5,7 @@ theme: seriph
 # like them? see https://unsplash.com/collections/94734566/slidev
 background: https://cover.sli.dev
 # some information about your slides (markdown enabled)
-title: 编写可测试的代码
+title: 编写可测试的C++代码
 info: |
   四个使代码难以测试的设计缺陷
 
@@ -27,7 +27,7 @@ seoMeta:
   # ogImage: https://cover.sli.dev
 ---
 
-# 编写可测试的代码
+# 编写可测试的C++代码
 
 四个使代码难以测试的设计缺陷
 
