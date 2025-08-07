@@ -190,11 +190,14 @@ seoMeta:
     public: PaymentProcessor() {
       // 构造函数为空，需要额外调用init()
     }
-    public: void init() { /* 初始化逻辑 */ }
+    public: void init() { /* 初始化逻辑，如创建数据库连接对象 */ }
   };
   ```
 
   说明：对象应该在构造函数完成后就处于完全可用状态，不需要额外的初始化步骤。
+
+  > init 函数只是将构造函数中的初始化逻辑移动到单独的 init 函数中。并没有解决构造函数执行实际工作的问题。
+  > 同样隐藏了类的依赖关系，难以替换协作者为测试替身，导致测试困难。
 
   ::
 
@@ -253,6 +256,33 @@ seoMeta:
 
   ::
 
+---
+  
+对象图是指类的依赖关系构成了一个有向图。
+
+```mermaid
+classDiagram
+    direction LR
+    A ..> B
+    B ..> C
+    C ..> D
+
+    class A {
+      getB()
+    }
+
+    class B {
+      getC()
+    }
+
+    class C {
+      getD()
+    }
+
+    class D {
+      doSomthing()
+    }
+```
 ---
 
 # 缺陷 #1: 构造函数执行实际工作 (继续)
