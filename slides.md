@@ -375,6 +375,10 @@ public:
 
 ---
 
+## 测试示例
+
+---
+
 # 缺陷 #2: 深入协作者
 
 ## 问题所在
@@ -803,28 +807,35 @@ public:
 
 ### 工厂模式 + 非单例对象 + 依赖注入 + 接口控制反转
 
-::v-clicks
-
 ```cpp
 // 定义接口（抽象基类）
+
+// 支付服务接口
 class IPaymentService {
 public:
     virtual ~IPaymentService() = default;
     virtual void charge(double amount) = 0;
 };
 
+// 库存管理接口
 class IInventoryManager {
 public:
     virtual ~IInventoryManager() = default;
     virtual void updateStock(const std::vector<Item>& items) = 0;
 };
 
+// 日志接口
 class ILogger {
 public:
     virtual ~ILogger() = default;
     virtual void log(const std::string& message) = 0;
 };
 
+```
+
+---
+
+```cpp
 // 具体实现
 class PaymentService : public IPaymentService {
 public:
@@ -847,6 +858,11 @@ public:
     }
 };
 
+```
+
+---
+
+```cpp
 // 工厂接口
 class IServiceFactory {
 public:
@@ -855,10 +871,15 @@ public:
     virtual std::shared_ptr<IInventoryManager> getInventoryManager() = 0;
     virtual std::shared_ptr<ILogger> getLogger() = 0;
 };
+```
 
+---
+
+```cpp
 // 具体工厂实现 - 缓存已创建的对象，避免重复创建
 class ServiceFactory : public IServiceFactory {
 private:
+    // 缓存对象
     std::shared_ptr<IPaymentService> paymentService;
     std::shared_ptr<IInventoryManager> inventoryManager;
     std::shared_ptr<ILogger> logger;
@@ -871,24 +892,24 @@ public:
         }
         return paymentService;
     }
-    
+
     // 获取或创建库存管理服务（单例模式）
     std::shared_ptr<IInventoryManager> getInventoryManager() override {
-        if (!inventoryManager) {
-            inventoryManager = std::make_shared<InventoryManager>();
-        }
-        return inventoryManager;
+        // 省略创建逻辑
     }
-    
+
     // 获取或创建日志服务（单例模式）
     std::shared_ptr<ILogger> getLogger() override {
-        if (!logger) {
-            logger = std::make_shared<Logger>();
-        }
-        return logger;
+        // 省略创建逻辑
     }
 };
+```
 
+---
+
+**依赖注入**
+
+```cpp
 // 使用依赖注入的订单处理器
 class OrderProcessor {
 private:
@@ -896,7 +917,7 @@ private:
     std::shared_ptr<IInventoryManager> inventoryManager;
     std::shared_ptr<ILogger> logger;
 
-public:    
+public:
     // 注入服务对象
     OrderProcessor(std::shared_ptr<IPaymentService> paymentService,
                    std::shared_ptr<IInventoryManager> inventoryManager,
@@ -914,9 +935,13 @@ public:
 };
 ```
 
+---
+
 说明：
 
 这种组合方式结合了多种优秀的设计模式，特别适用于替代传统的单例模式：
+
+::v-clicks
 
 1. **接口抽象**：通过接口（抽象类）定义服务契约，实现控制反转
 2. **工厂模式**：使用工厂管理对象创建和生命周期
@@ -924,7 +949,13 @@ public:
 4. **依赖注入**：通过构造函数注入依赖，便于测试和替换
 5. **智能指针**：使用 `std::shared_ptr` 管理对象生命周期，自动引用计数
 
+::
+
+---
+
 优势：
+
+::v-clicks
 
 - **可测试性**：可以轻松注入模拟对象进行测试
 - **对象复用**：工厂缓存已创建的对象，避免重复创建开销
@@ -932,6 +963,20 @@ public:
 - **灵活配置**：可以在运行时决定使用哪种工厂实现
 - **生命周期管理**：使用智能指针自动管理内存
 - **符合开闭原则**：添加新服务类型不需要修改现有代码
+
+::
+
+---
+
+可以继续改进的地方：
+
+::v-clicks
+
+- **工厂代码复用**: 如果可以使用模板元编程，则可以使用模板元编程来实现缓存对象的工厂类
+
+::
+
+---
 
 测试示例：
 
@@ -947,21 +992,19 @@ TEST(OrderProcessorTest, ProcessOrderChargesPayment) {
     auto mockPayment = std::make_shared<MockPaymentService>();
     auto mockInventory = std::make_shared<MockInventoryManager>();
     auto mockLogger = std::make_shared<MockLogger>();
-    
+
     // 设置期望
     EXPECT_CALL(*mockPayment, charge(100.0));
-    
+
     // 注入模拟对象
-    OrderProcessor processor(mockPayment, 
-                            mockInventory, 
+    OrderProcessor processor(mockPayment,
+                            mockInventory,
                             mockLogger);
-    
+
     Order order(100.0, items);
     processor.processOrder(order);
 }
 ```
-
-::
 
 ---
 
