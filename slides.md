@@ -96,7 +96,7 @@ seoMeta:
 
 ## 问题所在
 
-<v-clicks>
+::v-clicks
 
 - 构造函数应该只将参数分配给字段
 - 当构造函数执行实际工作时，会使得：
@@ -104,7 +104,7 @@ seoMeta:
   - 用测试替身替换协作者变得困难
   - 理解类依赖关系变得困难
 
-</v-clicks>
+::
 
 ---
 
@@ -113,6 +113,8 @@ seoMeta:
 ## 警告信号及说明
 
 - **在构造函数中或字段声明中使用 `new` 关键字**
+
+  ::v-clicks
 
   ```cpp
   class UserService {
@@ -123,6 +125,8 @@ seoMeta:
 
   说明：这种方式将创建依赖的职责放在了类内部，使得难以替换为测试替身，也隐藏了类的真实依赖。
 
+  ::
+
 ---
 
 # 缺陷 #1: 构造函数执行实际工作 (继续)
@@ -130,6 +134,8 @@ seoMeta:
 ## 警告信号及说明 (继续)
 
 - **在构造函数中或字段声明中调用静态方法**
+
+  ::v-clicks
 
   ```cpp
   class OrderService {
@@ -140,6 +146,8 @@ seoMeta:
 
   说明：静态方法调用创建了隐式依赖，同样难以替换为测试替身，且使类与特定实现紧密耦合。
 
+  ::
+
 ---
 
 # 缺陷 #1: 构造函数执行实际工作 (继续)
@@ -147,6 +155,8 @@ seoMeta:
 ## 警告信号及说明 (继续)
 
 - **构造函数中除了字段赋值之外的任何操作**
+
+  ::v-clicks
 
   ```cpp
   class EmailService {
@@ -161,6 +171,8 @@ seoMeta:
 
   说明：构造函数应该只负责初始化字段，而不是执行复杂的业务逻辑或调用其他方法。
 
+  ::
+
 ---
 
 # 缺陷 #1: 构造函数执行实际工作 (继续)
@@ -168,6 +180,8 @@ seoMeta:
 ## 警告信号及说明 (继续)
 
 - **构造函数完成后对象未完全初始化**
+
+  ::v-clicks
 
   ```cpp
   class PaymentProcessor {
@@ -180,6 +194,8 @@ seoMeta:
 
   说明：对象应该在构造函数完成后就处于完全可用状态，不需要额外的初始化步骤。
 
+  ::
+
 ---
 
 # 缺陷 #1: 构造函数执行实际工作 (继续)
@@ -187,6 +203,8 @@ seoMeta:
 ## 警告信号及说明 (继续)
 
 - **构造函数中存在控制流（条件或循环逻辑）**
+
+  ::v-clicks
 
   ```cpp
   class ReportGenerator {
@@ -203,6 +221,8 @@ seoMeta:
 
   说明：构造函数中包含条件逻辑使类的行为变得复杂且难以预测，也增加了测试的复杂性。
 
+  ::
+
 ---
 
 # 缺陷 #1: 构造函数执行实际工作 (继续)
@@ -210,6 +230,8 @@ seoMeta:
 ## 警告信号及说明 (继续)
 
 - **在构造函数中进行复杂的对象图构造**
+
+  ::v-clicks
 
   ```cpp
   class ShoppingCart {
@@ -227,6 +249,8 @@ seoMeta:
 
   说明：在构造函数中构造复杂的对象图使得类承担了过多职责，也使测试需要创建大量依赖对象。
 
+  ::
+
 ---
 
 # 缺陷 #1: 构造函数执行实际工作 (继续)
@@ -234,6 +258,8 @@ seoMeta:
 ## 警告信号及说明 (继续)
 
 - **添加或使用初始化块**
+
+  ::v-clicks
 
   ```cpp
   class DataProcessor {
@@ -250,6 +276,8 @@ seoMeta:
 
   说明：初始化块中的逻辑应该移到专门的方法中，保持构造函数的简洁。
 
+  ::
+
 ---
 
 # 缺陷 #1: 示例
@@ -257,6 +285,9 @@ seoMeta:
 ## 之前：难以测试
 
 <div class="grid cols-2 gap-4">
+
+::v-clicks
+
 <div>
 
 ```cpp
@@ -291,6 +322,9 @@ public:
 - 难以轻松测试错误处理路径
 
 </div>
+
+::
+
 </div>
 
 ---
@@ -300,6 +334,9 @@ public:
 ## 之后：可测试的设计
 
 <div class="grid cols-2 gap-4">
+
+::v-clicks
+
 <div>
 
 ```cpp
@@ -331,6 +368,9 @@ public:
 - 依赖关系清晰
 
 </div>
+
+::
+
 </div>
 
 ---
@@ -356,6 +396,8 @@ public:
 
 - **传入的对象从未直接使用（仅用于获取其他对象）**
 
+  ::v-clicks
+
   ```cpp
   class OrderService {
     public: void processOrder(Order order, DatabaseManager dbManager) {
@@ -369,9 +411,13 @@ public:
 
   说明：传入 "DatabaseManager" 只是为了获取 "Connection" ，这表明类与 "DatabaseManager" 的耦合度过高，应该直接依赖所需的对象。
 
+  ::
+
 ---
 
 - **违反得墨忒耳定律：方法调用链通过对象图走过不止一个点(.)**
+
+  ::v-clicks
 
   ```cpp
   class UserService {
@@ -384,9 +430,13 @@ public:
 
   说明：这种链式调用称为"火车残骸"，增加了代码的脆弱性，任何一个环节的改变都可能影响整个调用链。
 
+  ::
+
 ---
 
 - **参数或字段中的可疑名称**
+
+  ::v-clicks
 
   ```cpp
   class ReportGenerator {
@@ -401,6 +451,8 @@ public:
 
   说明：像 "context"、"environment"、"manager" 这样的名称通常表明类可能在深入协作者，应该明确需要的具体依赖。
 
+  ::
+
 ---
 
 # 缺陷 #2: 示例对比
@@ -408,6 +460,9 @@ public:
 ### 之前：难以测试
 
 <div class="grid cols-2 gap-4">
+
+::v-clicks
+
 <div>
 
 ```cpp
@@ -442,6 +497,9 @@ public:
 - 难以隔离测试
 
 </div>
+
+::
+
 </div>
 
 ---
@@ -451,6 +509,9 @@ public:
 ### 之后：可测试的设计
 
 <div class="grid cols-2 gap-4">
+
+::v-clicks
+
 <div>
 
 ```cpp
@@ -480,6 +541,9 @@ public:
 - 遵循得墨忒耳定律
 
 </div>
+
+::
+
 </div>
 
 ---
@@ -506,6 +570,8 @@ public:
 
 - **添加或使用单例**
 
+  ::v-clicks
+
   ```cpp
   class UserService {
     public: void createUser(User user) {
@@ -518,9 +584,13 @@ public:
 
   说明：单例模式隐藏了类的依赖关系，使得难以替换为测试替身，也使得测试之间相互影响。
 
+  ::
+
 ---
 
 - **添加或使用静态字段或静态方法**
+
+  ::v-clicks
 
   ```cpp
   class OrderService {
@@ -533,11 +603,15 @@ public:
   };
   ```
 
+  ::
+
   说明：静态字段和方法创建了全局状态，使得测试之间相互影响，难以并行运行。
 
 ---
 
 - **添加或使用静态初始化块**
+
+  ::v-clicks
 
   ```cpp
   class Logger {
@@ -554,9 +628,13 @@ public:
 
   说明：静态初始化块使得类的行为在测试间难以控制和修改。
 
+  ::
+
 ---
 
 - **添加或使用注册表**
+
+  ::v-clicks
 
   ```cpp
   class PaymentService {
@@ -570,9 +648,14 @@ public:
 
   说明：注册表和服务定位器隐藏了真实的依赖关系，使得难以理解类的实际需求。
 
+  ::
+
 ---
 
 - **添加或使用服务定位器**
+
+  ::v-clicks
+
   ```cpp
   class NotificationService {
     public: void sendNotification(Notification notification) {
@@ -582,7 +665,10 @@ public:
     }
   };
   ```
+
   说明：服务定位器虽然比单例稍好，但仍然隐藏了依赖关系，不利于测试。
+
+  ::
 
 ---
 
@@ -591,7 +677,9 @@ public:
 ## 之前：难以测试
 
 <div class="grid cols-2 gap-4">
-<v-clicks>
+
+::v-clicks
+
 <div>
 
 ```cpp
@@ -623,7 +711,9 @@ public:
 - 难以并行运行测试
 
 </div>
-</v-clicks>
+
+::
+
 </div>
 
 ---
@@ -631,6 +721,9 @@ public:
 ## 之后：可测试的设计
 
 <div class="grid cols-2 gap-4">
+
+::v-clicks
+
 <div>
 
 ```cpp
@@ -668,114 +761,207 @@ public:
 - 测试可以独立运行
 
 </div>
+
+::
+
+</div>
+
+---
+
+## 补充：为什么单例模式会带来问题？
+
+很多人都听说过全局变量是魔鬼。
+
+<div class="grid cols-2 gap-4">
+
+::v-clicks
+
+<div>
+
+因为全局变量带来了两个问题：
+
+- 全局变量是全局的
+- 全局变量影响范围不可控, 难以追踪状态
+
+</div>
+<div>
+
+单例模式解决了什么？
+
+- 单例模式的状态是私有的 √
+- 单例模式影响范围不可控, 难以追踪状态 ×
+
+</div>
+
+::
+
 </div>
 
 ---
 
 ## 补充：替代单例模式的方法
 
-### 1. 依赖注入 (Dependency Injection)
+### 工厂模式 + 非单例对象 + 依赖注入 + 接口控制反转
+
+::v-clicks
 
 ```cpp
-class OrderProcessor {
+// 定义接口（抽象基类）
+class IPaymentService {
+public:
+    virtual ~IPaymentService() = default;
+    virtual void charge(double amount) = 0;
+};
+
+class IInventoryManager {
+public:
+    virtual ~IInventoryManager() = default;
+    virtual void updateStock(const std::vector<Item>& items) = 0;
+};
+
+class ILogger {
+public:
+    virtual ~ILogger() = default;
+    virtual void log(const std::string& message) = 0;
+};
+
+// 具体实现
+class PaymentService : public IPaymentService {
+public:
+    void charge(double amount) override {
+        // 实际支付逻辑
+    }
+};
+
+class InventoryManager : public IInventoryManager {
+public:
+    void updateStock(const std::vector<Item>& items) override {
+        // 实际库存更新逻辑
+    }
+};
+
+class Logger : public ILogger {
+public:
+    void log(const std::string& message) override {
+        // 实际日志记录逻辑
+    }
+};
+
+// 工厂接口
+class IServiceFactory {
+public:
+    virtual ~IServiceFactory() = default;
+    virtual std::shared_ptr<IPaymentService> getPaymentService() = 0;
+    virtual std::shared_ptr<IInventoryManager> getInventoryManager() = 0;
+    virtual std::shared_ptr<ILogger> getLogger() = 0;
+};
+
+// 具体工厂实现 - 缓存已创建的对象，避免重复创建
+class ServiceFactory : public IServiceFactory {
 private:
-    PaymentService& paymentService;
-    InventoryManager& inventoryManager;
-    Logger& logger;
+    std::shared_ptr<IPaymentService> paymentService;
+    std::shared_ptr<IInventoryManager> inventoryManager;
+    std::shared_ptr<ILogger> logger;
 
 public:
-    // 通过构造函数注入依赖
-    OrderProcessor(PaymentService& paymentService,
-                   InventoryManager& inventoryManager,
-                   Logger& logger)
+    // 获取或创建支付服务（单例模式）
+    std::shared_ptr<IPaymentService> getPaymentService() override {
+        if (!paymentService) {
+            paymentService = std::make_shared<PaymentService>();
+        }
+        return paymentService;
+    }
+    
+    // 获取或创建库存管理服务（单例模式）
+    std::shared_ptr<IInventoryManager> getInventoryManager() override {
+        if (!inventoryManager) {
+            inventoryManager = std::make_shared<InventoryManager>();
+        }
+        return inventoryManager;
+    }
+    
+    // 获取或创建日志服务（单例模式）
+    std::shared_ptr<ILogger> getLogger() override {
+        if (!logger) {
+            logger = std::make_shared<Logger>();
+        }
+        return logger;
+    }
+};
+
+// 使用依赖注入的订单处理器
+class OrderProcessor {
+private:
+    std::shared_ptr<IPaymentService> paymentService;
+    std::shared_ptr<IInventoryManager> inventoryManager;
+    std::shared_ptr<ILogger> logger;
+
+public:    
+    // 注入服务对象
+    OrderProcessor(std::shared_ptr<IPaymentService> paymentService,
+                   std::shared_ptr<IInventoryManager> inventoryManager,
+                   std::shared_ptr<ILogger> logger)
         : paymentService(paymentService),
           inventoryManager(inventoryManager),
           logger(logger) {
     }
 
-    void processOrder(Order order) {
-        paymentService.charge(order.getAmount());
-        inventoryManager.updateStock(order.getItems());
-        logger.log("Order processed: " + order.getId());
+    void processOrder(const Order& order) {
+        paymentService->charge(order.getAmount());
+        inventoryManager->updateStock(order.getItems());
+        logger->log("Order processed: " + order.getId());
     }
 };
 ```
 
----
+说明：
 
-### 2. 工厂模式 (Factory Pattern)
+这种组合方式结合了多种优秀的设计模式，特别适用于替代传统的单例模式：
 
-```cpp
-class ServiceFactory {
-public:
-    static PaymentService createPaymentService() {
-        return PaymentService();
-    }
+1. **接口抽象**：通过接口（抽象类）定义服务契约，实现控制反转
+2. **工厂模式**：使用工厂管理对象创建和生命周期
+3. **对象缓存**：工厂缓存已创建的对象，避免重复创建，实现类似单例的效果
+4. **依赖注入**：通过构造函数注入依赖，便于测试和替换
+5. **智能指针**：使用 `std::shared_ptr` 管理对象生命周期，自动引用计数
 
-    static InventoryManager createInventoryManager() {
-        return InventoryManager();
-    }
-};
-```
-
----
-
-### 3. 控制反转 (Inversion of Control)
-
-```cpp
-// 定义接口
-class IPaymentService {
-public:
-    virtual void charge(double amount) = 0;
-};
-
-// 具体实现
-class StripePaymentService : public IPaymentService {
-public:
-    void charge(double amount) override {
-        // Stripe 实现
-    }
-};
-
-// 通过容器管理实例
-class ServiceContainer {
-private:
-    std::unique_ptr<IPaymentService> paymentService;
-public:
-    ServiceContainer() {
-        paymentService = std::make_unique<StripePaymentService>();
-    }
-    IPaymentService& getPaymentService() {
-        return *paymentService;
-    }
-};
-```
-
----
-
-### 4. 参数传递
-
-```cpp
-class OrderProcessor {
-public:
-    // 将依赖作为参数传递
-    void processOrder(Order order,
-                     PaymentService& paymentService,
-                     InventoryManager& inventoryManager) {
-        paymentService.charge(order.getAmount());
-        inventoryManager.updateStock(order.getItems());
-    }
-};
-```
-
----
-
-### 这些方法的优势：
+优势：
 
 - **可测试性**：可以轻松注入模拟对象进行测试
-- **灵活性**：可以在运行时更改实现
-- **松耦合**：类不依赖于具体实现
-- **可维护性**：依赖关系明确，易于理解和修改
+- **对象复用**：工厂缓存已创建的对象，避免重复创建开销
+- **高度解耦**：类依赖于接口而非具体实现
+- **灵活配置**：可以在运行时决定使用哪种工厂实现
+- **生命周期管理**：使用智能指针自动管理内存
+- **符合开闭原则**：添加新服务类型不需要修改现有代码
+
+测试示例：
+
+```cpp
+// 在测试中使用模拟对象
+class MockPaymentService : public IPaymentService {
+public:
+    MOCK_METHOD(void, charge, (double amount), (override));
+};
+
+// 测试代码
+TEST(OrderProcessorTest, ProcessOrderChargesPayment) {
+    auto mockPayment = std::make_shared<MockPaymentService>();
+    auto mockInventory = std::make_shared<MockInventoryManager>();
+    auto mockLogger = std::make_shared<MockLogger>();
+    
+    // 设置期望
+    EXPECT_CALL(*mockPayment, charge(100.0));
+    
+    // 注入模拟对象
+    OrderProcessor processor(mockPayment, 
+                            mockInventory, 
+                            mockLogger);
+    
+    Order order(100.0, items);
+    processor.processOrder(order);
+}
+```
+
+::
 
 ---
 
