@@ -1229,14 +1229,11 @@ public:
     if (!validator.isValidEmail(email)) {
       throw new ValidationException();
     }
-
     // 数据库逻辑
     User user = new User(name, email);
     conn.save(user);
-
     // 通知逻辑
     emailService.sendWelcomeEmail(user);
-
     return user;
   }
 };
@@ -1359,8 +1356,6 @@ public:
 > "防止 Bug 最有效的方法是编写可测试的代码。"
 > -- Miško Hevery
 
-::
-
 ---
 
 # 参考资料
@@ -1368,17 +1363,16 @@ public:
 ::v-clicks
 
 - Miško Hevery的[编写可测试代码指南](https://github.com/mhevery/guide-to-testable-code)
-- [Google测试博客](https://testing.googleblog.com/)
+- [Google 测试博客](https://testing.googleblog.com/)
 - Robert C. Martin的《代码整洁之道》
 - Kent Beck的《测试驱动开发》
 
 ::
 
-<br>
-::v-click
+---
 
-<div class="text-center">
+<div class="text-center h-full flex items-center justify-center">
 
-谢谢！
+<h1 class="text-9xl">感谢聆听</h1>
 
 </div>
